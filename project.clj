@@ -26,9 +26,9 @@
                                           :pretty-print true}
                           :notify-command run-specs}
 
-                       ; :prod {:source-paths ["src/cljs"]
-                       ;         :compiler {:output-to "public/javascript/strmatch.js"
-                       ;                    :optimizations :simple}}
+                    :prod {:source-paths ["src/cljs"]
+                           :compiler {:output-to "public/javascript/strmatch.js"
+                                      :optimizations :simple}}
                     }
 
               :test-commands {"test" run-specs}})

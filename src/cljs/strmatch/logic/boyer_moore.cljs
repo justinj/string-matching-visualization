@@ -57,7 +57,6 @@
   ([needle haystack index]
   (let [discrep (reverse-discrepancy-index needle haystack index)
         jump (calculate-jump needle haystack index)]
-    (prn discrep)
     (cons
       {
        :index index 

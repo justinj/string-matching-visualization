@@ -33,7 +33,7 @@
                 (map :index (match "abc" "aabc"))))
           (it "gives the color at each match"
               (should= 
-                [[:green :green :green :red]]
+                [[:green :green :green]]
                 (map :colors (match "abc" "abc")))
               )
           )
