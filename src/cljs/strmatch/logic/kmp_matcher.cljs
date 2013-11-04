@@ -37,13 +37,12 @@
      :colors (color-array padding length-of-match)}))
 
 (defn match
-  ([needle haystack] (vec (reverse (match needle haystack 0 nil 0))))
-  ([needle haystack index result prev-fail]
-   (let [fail (failure-array needle)
-         discrep (discrepancy-index needle haystack index)
-         jump (- discrep (fail discrep))
+  ([needle haystack] (vec (reverse (match needle haystack (failure-array needle) 0 nil 0))))
+  ([needle haystack fail-array index result prev-fail]
+   (let [discrep (discrepancy-index needle haystack index)
+         jump (- discrep (fail-array discrep))
          next-entry (entry-for index discrep needle prev-fail)
          next-result (cons next-entry result)]
      (if (and discrep (<= index (count haystack)))
-       (recur needle haystack (+ index jump) next-result (fail discrep))
+       (recur needle haystack fail-array (+ index jump) next-result (fail-array discrep))
        next-result))))
