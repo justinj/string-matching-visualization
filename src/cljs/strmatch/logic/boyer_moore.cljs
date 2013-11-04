@@ -40,7 +40,9 @@
   [needle haystack index]
   (let [relevant-haystack (take (count needle) (drop index haystack))
         reversed-index (discrepancy-index (reverse needle) (reverse relevant-haystack) 0)]
-    (- (count needle) (if reversed-index (inc reversed-index) (count needle)))))
+    (if reversed-index
+    (- (count needle) (inc reversed-index))
+      false)))
 
 (defn- calculate-jump
   [needle haystack index]
@@ -60,8 +62,8 @@
     (cons
       {
        :index index 
-       :colors (concat (repeat (+ index discrep) nil) (if (zero? discrep) [] [:red]) (repeat (- (count needle) discrep) :green) )
+       :colors (concat (repeat (+ index discrep) nil) (if discrep [:red] []) (repeat (- (count needle) discrep) :green) )
        }
-    (if (or (= discrep 0) (> (+ index discrep) (count haystack)))
+    (if (or (not discrep) (> (+ index discrep) (count haystack)))
       '()
       (match needle haystack (+ index jump)))))))

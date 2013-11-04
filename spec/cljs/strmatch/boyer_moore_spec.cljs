@@ -30,7 +30,10 @@
                 (map :index (match "abc" "abc")))
               (should= 
                 [0 1]
-                (map :index (match "abc" "aabc"))))
+                (map :index (match "abc" "aabc")))
+              (should= 
+                [0 1]
+                (map :index (match "bb" "abb"))))
           (it "gives the color at each match"
               (should= 
                 [[:green :green :green]]
