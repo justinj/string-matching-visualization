@@ -1,6 +1,37 @@
 (ns strmatch.logic.boyer-moore
   (:use [strmatch.logic.common :only [discrepancy-index]]))
 
+; The Boyer-Moore algorithm has a couple differences from KMP.
+; First, it begins trying to match from the right side, rather than the left.
+; Second, it uses two tables to calculate its jumps (last occurrence and suffix), rather than just one.
+; In any situation, it checks what jump either table would allow, and takes the better one.
+; It happens that the two tables tend to complement each other quite well, so large jumps are often possible.
+;
+; https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm
+
+; The last-occurrence checker takes a character and returns the last occurence
+; of that character in the needle, or -1 if it does not occur.
+; This is used with the haystack to push the needle past all the points where the current
+; haystack character could not possibly occur.
+; Example:
+;
+; needle: jey
+; haystack: abjjey
+; -> abjjey
+; -> jey
+;
+; First, we check the value at i = 2 for a match.
+; We don't get one. Then we find the "last occurrence" of 'j' in our needle, and align that with the 'j':
+;
+; -> abjjey
+; ->   jey
+;
+; The same process repeats with the 'e', we align the 'e' with the last occurence:
+; -> abjjey
+; ->    jey
+;
+; And find the match.
+
 (defn last-occurrence
   [string]
   (fn [chr]
@@ -30,6 +61,19 @@
   (let [suffix (drop index string)]
     (match-index string suffix)))
 
+; The suffix checker is constructed as follows:
+;
+; For index `i`, take `s`, the substring beginning at index `i`.
+; so if our string is NEEDLE, and i = 4, we take `s` = "LE".
+; We then find the farthest right alignment of `s` with the needle,
+; such that the first character *does not* match, and the rest of `s` does.
+;
+; In this case, the alignment is:
+; -> NEEDLE
+; ->  LE
+;
+; You could think of it as finding the largest index that [^L]E matches.
+
 (defn bad-suffix
   [string]
   (vec (map 
@@ -49,21 +93,23 @@
   (let [discrep (reverse-discrepancy-index needle haystack index)
         bad-suff (bad-suffix needle)
         last-occ (last-occurrence needle)]
-    (max
-      (- discrep (bad-suff discrep))
-      (- discrep (last-occ (nth haystack (+ index discrep)))))
-    ))
+    (- discrep (min (bad-suff discrep)
+                    (last-occ (nth haystack (+ index discrep))))))) 
+
+(defn- color-array [index discrep needle]
+  (concat (repeat (+ index discrep) nil)
+          (if discrep [:red] [])
+          (repeat (- (count needle) discrep) :green)))
 
 (defn match
-  ([needle haystack] (match needle haystack 0))
-  ([needle haystack index]
-  (let [discrep (reverse-discrepancy-index needle haystack index)
-        jump (calculate-jump needle haystack index)]
-    (cons
-      {
-       :index index 
-       :colors (concat (repeat (+ index discrep) nil) (if discrep [:red] []) (repeat (- (count needle) discrep) :green) )
-       }
-    (if (or (not discrep) (> (+ index discrep) (count haystack)))
-      '()
-      (match needle haystack (+ index jump)))))))
+  [needle haystack]
+  (loop [index 0
+         acc []]
+    (let [discrep (reverse-discrepancy-index needle haystack index)
+          jump (calculate-jump needle haystack index)
+          colors (color-array index discrep needle)
+          entry {:index index :colors colors }
+          result (conj acc entry)]
+      (if (and discrep (<= (+ index discrep) (count haystack)))
+        (recur (+ index jump) result)
+        result))))
