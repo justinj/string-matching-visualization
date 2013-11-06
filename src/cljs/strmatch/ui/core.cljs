@@ -2,17 +2,22 @@
   (:require [strmatch.logic.kmp-matcher]
             [strmatch.logic.brute-force]
             [strmatch.logic.boyer-moore])
-  (:use [jayq.core :only [$ val css html append delegate]]))
+  (:use [jayq.core :only [$ val css html append delegate anim dequeue]]
+        [jayq.util :only [log]])
+  (:use-macros [jayq.macros :only [queue]]))
 
 
 (def $go ($ :#go))
+(def $needle-input ($ :#needle-input))
+(def $haystack-input ($ :#haystack-input))
+
 (def $needle ($ :#needle))
 (def $haystack ($ :#haystack))
 
 (delegate $go "" :click
        (fn [e]
-         (let [needle (val $needle)
-               haystack (val $haystack)]
+         (let [needle (val $needle-input)
+               haystack (val $haystack-input)]
            (show-match needle haystack))))
    
 (defn match-fn
@@ -36,8 +41,8 @@
                (range 0 h)))))
 
 (def color-for
-  {:green "81F13D"
-   :red "FF0000"})
+  {:green "#81F13D"
+   :red "#FF0000"})
 
 (defn set-cell
   [x y value color]
@@ -52,18 +57,61 @@
     (doseq [x (range 0 (count cs))]
       (set-cell x row (cs x) (colors x)))))
 
+; (defn show-match
+;   [needle haystack]
+;   (let [match-result ((match-fn) needle haystack)
+;         results match-result]
+;     (set-dimens (count haystack) (inc (count results)))
+;     (set-row 0 haystack #{})
+;     (doall
+;       (map-indexed
+;         (fn [i result]
+;           (set-row (inc i)
+;                    (str (apply str (repeat (:index result) " ")) needle)
+;                    (vec (:colors result))))
+;         results))))
+
+(def div-width 30)
+
+(defn set-value-divs 
+  [$elem value]
+  (.empty $elem)
+  (doseq [[i char] (map-indexed vector value)]
+    (append $elem 
+            (str "<div "
+                 "style='width:" div-width "px;float:left'"
+                 "id='cell" i "'"
+                 "class='cell'"
+                 ">" char
+                 "</div>"))))
+
+(defn color [$elem col index]
+  (let [actual-color (color-for col)]
+    (queue $elem
+           (prn actual-color)
+      (anim (.children $elem (str "#cell" index))
+            {:background-color actual-color}
+            200)
+           (dequeue $elem))
+
+      $elem))
+
+(defn animate-match
+  [match-result $elem]
+  (loop [results match-result
+         elem $elem]
+    (if (empty? results)
+      elem
+      (let [index (:index (first results))]
+        (recur (rest results)
+               (-> elem
+                   (anim {:left (* div-width index)} 250)
+                   (.delay 250)
+                   ))))))
+
 (defn show-match
   [needle haystack]
-  (let [match-result ((match-fn) needle haystack)
-        results match-result]
-    (set-dimens (count haystack) (inc (count results)))
-    (set-row 0 haystack #{})
-    (doall
-      (map-indexed
-        (fn [i result]
-          (set-row (inc i)
-                   (str (apply str (repeat (:index result) " ")) needle)
-                   (vec (:colors result))))
-        results))))
-
-
+  (let [match-result ((match-fn) needle haystack)]
+    (set-value-divs $haystack haystack)
+    (set-value-divs $needle needle)
+        (animate-match match-result $needle)))
