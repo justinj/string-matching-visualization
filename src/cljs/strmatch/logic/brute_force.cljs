@@ -7,7 +7,12 @@
 (defn- colors-for [needle haystack padding]
   (vec (let [discrep (discrepancy-index needle haystack padding)
              length-of-match (or discrep (count needle))]
-         (color-array padding length-of-match))))
+         (concat 
+           (map (fn [i] { :color :green
+                         :index i })
+                (range 0 length-of-match))
+           (if discrep [{ :color :red
+                          :index length-of-match}] [])))))
 
 (defn match
   ([needle haystack] (vec (reverse (match needle haystack 0 nil))))

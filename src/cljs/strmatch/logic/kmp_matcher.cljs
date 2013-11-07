@@ -34,7 +34,7 @@
         padding (+ to-ignore index)
         length-of-match (if discrep (- discrep to-ignore) (count needle))]
     {:index index
-     :colors (color-array padding length-of-match)}))
+     :colors (color-array to-ignore length-of-match)}))
 
 (defn match
   [needle haystack]

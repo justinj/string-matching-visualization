@@ -13,6 +13,10 @@
             :else index))))
 
 (defn color-array [padding length-of-match]
-  (vec (concat (repeat padding nil)
-               (repeat length-of-match :green)
-               (list :red))))
+  (prn padding)
+  (vec (concat 
+         (map (fn [i] { :color :green
+                       :index (+ padding i) })
+              (range 0 length-of-match))
+         [{:color :red
+           :index (+ padding length-of-match)}] )))
