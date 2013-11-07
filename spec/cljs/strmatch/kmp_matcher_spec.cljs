@@ -25,6 +25,6 @@
                 (map :index (match "abcdabd" "abc abcdab abcdabcdabde"))))
           (it "highlights the letters comparisons were done against"
               (should=
-                [[:green :green :green :red]]
+                [[{:color :green, :index 0} {:color :green, :index 1} {:color :green, :index 2} {:color :red, :index 3}]]
                 (map :colors (match "abc" "abc"))))
           )
