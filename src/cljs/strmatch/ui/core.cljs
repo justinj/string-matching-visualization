@@ -11,9 +11,6 @@
 (def $needle-input ($ :#needle-input))
 (def $haystack-input ($ :#haystack-input))
 
-(def $needle ($ :#needle))
-(def $haystack ($ :#haystack))
-
 (delegate $go "" :click
           (fn [e]
             (let [needle (val $needle-input)
@@ -121,6 +118,11 @@
 (defn show-match
   [needle haystack]
   (let [match-result ((match-fn) needle haystack)]
-    (set-value-divs $haystack haystack)
-    (set-value-divs $needle needle)
-    (animate-match match-result $needle)))
+    (html ($ :.result)
+          (str 
+            "<div id=\"haystack\" class=\"monospace\"></div></br>"
+            "<div id=\"needle\" class=\"monospace\"></div>"))
+
+    (set-value-divs ($ :#haystack) haystack)
+    (set-value-divs ($ :#needle) needle)
+    (animate-match match-result ($ :#needle))))

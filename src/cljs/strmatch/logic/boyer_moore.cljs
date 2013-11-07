@@ -97,9 +97,10 @@
                     (last-occ (nth haystack (+ index discrep))))))) 
 
 (defn- color-array [index discrep needle]
-  (concat (repeat (+ index discrep) nil)
-          (if discrep [:red] [])
-          (repeat (- (count needle) discrep) :green)))
+  (concat (map (fn [i] { :color :green
+                       :index i })
+              (reverse (range (if discrep (inc discrep) 0) (count needle))))
+          (if discrep [{:index discrep :color :red}] [])))
 
 (defn match
   [needle haystack]
