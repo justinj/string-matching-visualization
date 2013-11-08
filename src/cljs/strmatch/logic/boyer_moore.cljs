@@ -102,15 +102,50 @@
               (reverse (range (if discrep (inc discrep) 0) (count needle))))
           (if discrep [{:index discrep :color :red}] [])))
 
-(defn match
+(defn- explanation-for
+  [needle haystack index]
+  (let [discrep (reverse-discrepancy-index needle haystack index)
+        bad-suff (bad-suffix needle)
+        bad-suff-value (bad-suff discrep)
+        last-occ (last-occurrence needle)
+        haystack-char (nth haystack (+ index discrep))
+        last-occ-value (last-occ haystack-char)]
+    (if discrep
+    (str 
+      "discrepancy_index = " discrep "<br>"
+      "last_occurrence(" haystack-char ") = " last-occ-value "<br>"
+      "bad_suffix(" discrep ") = " bad-suff-value
+      "<br><br>"
+
+      "Bad Suffix gives a jump of (" discrep ") - (" bad-suff-value ") = " (- discrep bad-suff-value) "<br>"
+      "So Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
+      "So we "
+      (cond (< bad-suff-value last-occ-value) "go with Bad Suffix"
+            (> bad-suff-value last-occ-value) "go with Last Occurrence"
+            :else "are indifferent"))
+      "Match found!")))
+
+(defn- match-data
   [needle haystack]
   (loop [index 0
          acc []]
     (let [discrep (reverse-discrepancy-index needle haystack index)
           jump (calculate-jump needle haystack index)
           colors (color-array index discrep needle)
-          entry {:index index :colors colors }
+          explanation (explanation-for needle haystack index)
+          entry {:index index
+                 :colors colors
+                 :explanation explanation}
           result (conj acc entry)]
       (if (and discrep (<= (+ index discrep) (count haystack)))
         (recur (+ index jump) result)
         result))))
+
+(defn match
+  [needle haystack]
+  (let [bad-suff (bad-suffix needle)
+        last-occ (last-occurrence needle)]
+    {:animation (match-data needle haystack)
+     :tables [(concat [["i" "Suffix Location"]] (map vector (range) bad-suff))
+              (concat [["char" "Last Occurrence"]]
+                      (map #(vector % (last-occ %)) (distinct needle)))]}))
