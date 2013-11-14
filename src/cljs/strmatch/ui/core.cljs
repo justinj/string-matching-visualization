@@ -7,16 +7,6 @@
   (:use-macros [jayq.macros :only [queue]]))
 
 
-(def $go ($ :#go))
-(def $needle-input ($ :#needle-input))
-(def $haystack-input ($ :#haystack-input))
-
-(delegate $go "" :click
-          (fn [e]
-            (let [needle (val $needle-input)
-                  haystack (val $haystack-input)]
-              (show-match needle haystack))))
-
 (defn match-fn
   []
   ({"naive"  strmatch.logic.brute-force/match
@@ -55,20 +45,6 @@
     (doseq [x (range 0 (count cs))]
       (set-cell x row (cs x) (colors x)))))
 
-; (defn show-match
-;   [needle haystack]
-;   (let [match-result ((match-fn) needle haystack)
-;         results match-result]
-;     (set-dimens (count haystack) (inc (count results)))
-;     (set-row 0 haystack #{})
-;     (doall
-;       (map-indexed
-;         (fn [i result]
-;           (set-row (inc i)
-;                    (str (apply str (repeat (:index result) " ")) needle)
-;                    (vec (:colors result))))
-;         results))))
-
 (def div-width 30)
 
 (defn set-value-divs 
@@ -92,6 +68,9 @@
            (dequeue $elem))
     $elem))
 
+(defn- position-of-haystack []
+  (-> :#haystack $ .position .-left))
+
 (defn animate-match
   [match-result $elem]
   (loop [results match-result]
@@ -106,9 +85,9 @@
                    (css :background-color "#FFFFFF"))
                (dequeue $elem))
         (-> $elem
-            (anim {:left (* div-width index)} 250)
-            (.delay 250)
-            )
+            (anim {:left 
+                   (+ (position-of-haystack) (* div-width index))} 250)
+            (.delay 250))
         (doseq [color-event colors]
           (-> $elem
               (color (:color color-event)
@@ -134,7 +113,6 @@
        "</table>"))
 
 (defn show-table [table]
-  (prn table)
   (append ($ :#tables)
         (table-html table)))
 
@@ -153,7 +131,36 @@
           (str 
             "<div id=\"haystack\" class=\"monospace\"></div></br>"
             "<div id=\"needle\" class=\"monospace\"></div>"))
-
     (set-value-divs ($ :#haystack) haystack)
     (set-value-divs ($ :#needle) needle)
+    (css ($ :#needle) {:left (position-of-haystack)})
+    (set! *playback-data* {:match-data match-animation :index 0})
     (animate-match match-animation ($ :#needle))))
+
+(def *playback-data*
+  {})
+
+(def *playing?* false)
+
+(defn step-forwards []
+  (when-not *playing?*
+    (set! *playback-data*
+          {:match-data (:match-data *playback-data*)
+           :index (inc (:index *playback-data*))})
+    (prn (:index *playback-data*))))
+
+(def $go ($ :#go))
+(def $step ($ :#step))
+(def $needle-input ($ :#needle-input))
+(def $haystack-input ($ :#haystack-input))
+
+(delegate $go "" :click
+          (fn [e]
+            (let [needle (val $needle-input)
+                  haystack (val $haystack-input)]
+              (show-match needle haystack))))
+
+(delegate $step "" :click
+          (fn [e]
+            (step-forwards)
+            ))

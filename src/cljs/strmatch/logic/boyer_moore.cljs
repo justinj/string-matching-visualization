@@ -118,7 +118,7 @@
       "<br><br>"
 
       "Bad Suffix gives a jump of (" discrep ") - (" bad-suff-value ") = " (- discrep bad-suff-value) "<br>"
-      "So Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
+      "Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
       "So we "
       (cond (< bad-suff-value last-occ-value) "go with Bad Suffix"
             (> bad-suff-value last-occ-value) "go with Last Occurrence"

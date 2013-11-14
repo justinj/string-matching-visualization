@@ -18,7 +18,7 @@
                     :dev {:source-paths ["src/cljs" "spec/cljs"]
                                :compiler {:output-to "public/javascript/strmatch_dev.js"
                                           :optimizations :whitespace
-                                          :pretty-print true}}
+                                          :pretty-print true }}
 
                     :test {:source-paths ["src/cljs/strmatch/logic" "spec/cljs"]
                                :compiler {:output-to "public/javascript/strmatch_test.js"

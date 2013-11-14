@@ -1,99 +1,115 @@
 <html>
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-  <title>Visualizing String Matching Algorithms</title>
+    <title>Visualizing String Matching Algorithms</title>
 
-  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
-  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
 
-  <style>
-    .monospace {
-      font-family: courier new;
-      font-size: 30px;
-      padding-bottom:20px;
-      min-width: 30px;
-    }
+    <style>
+      .monospace {
+        font-family: courier new;
+        font-size: 30px;
+        padding-bottom:20px;
+        min-width: 30px;
+      }
 
-    .cell {
-      text-align: center;
-    }
+      .cell {
+        text-align: center;
+      }
 
-    .options {
-      padding-top: 20px;
-    }
+      .options {
+        padding-top: 20px;
+      }
 
-    #needle {
-      position:absolute;
-    }
+      #needle {
+        position:absolute;
+      }
 
-    .table-cell {
-      text-align: center;
-      width: 40px;
-    }
+      .table-cell {
+        text-align: center;
+        width: 40px;
+      }
 
-    .char-table {
-      table-layout: fixed;
-    }
-  </style>
+      .char-table {
+        table-layout: fixed;
+      }
 
-</head>
-<body>
+      #links {
+        position:absolute;
+        bottom:0;
+      }
+    </style>
 
-  <a href="https://github.com/justinj/string-matching-visualization"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
-  <div id="main" class="container">
-    <form class="form-inline">
-      <div class="options">
+  </head>
+  <body>
 
-        <div class="algorithms form-group">
-          <div class="radio">
+    <a href="https://github.com/justinj/string-matching-visualization"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <div id="main" class="container">
+      <form class="form-inline">
+        <div class="options">
+
+          <div class="algorithms form-group">
+            <div class="radio">
+              <label>
+                <input type="radio" name="algorithm" class="algbutton input" value="naive" checked="true"></radio>
+                Naïve
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="algorithm" class="algbutton" value="kmp"></radio>
+                KMP
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="algorithm" class="algbutton" value="boyer_moore"></radio>
+                Boyer-Moore
+              </label>
+            </div>
+            <br><label>Algorithm</label>
+          </div>
+
+          <div class="form-group">
             <label>
-              <input type="radio" name="algorithm" class="algbutton input" value="naive" checked="true"></radio>
-              Naïve
+              <input type="text" value="ABCDABD" id="needle-input" class="form-control"></input> Needle
             </label>
           </div>
-          <div class="radio">
+          <div class="form-group">
             <label>
-              <input type="radio" name="algorithm" class="algbutton" value="kmp"></radio>
-              KMP
+              <input type="text" value="ABCABCDABABCQQQQQQQQQQQQQDABCDABDE" id="haystack-input" class="form-control"></input> Haystack
             </label>
           </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="algorithm" class="algbutton" value="boyer_moore"></radio>
-              Boyer-Moore
-            </label>
-          </div>
-          <br><label>Algorithm</label>
+          <br>
+          <input type="button" value="Go!" class="btn btn-default" id="go"></input>
+          <input type="button" value="Step" class="btn btn-default" id="step"></input>
         </div>
+      </form>
 
-        <div class="form-group">
-          <label>
-            <input type="text" value="ABCDABD" id="needle-input" class="form-control"></input> Needle
-          </label>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="text" value="ABCABCDABABCQQQQQQQQQQQQQQQQQQQQDABCDABDE" id="haystack-input" class="form-control"></input> Haystack
-          </label>
-        </div>
-        <br>
-        <input type="button" value="Go!" class="btn btn-default" id="go"></input>
+    <div class="result">
+      <div id="haystack" class="monospace"></div></br>
+      <div id="needle" class="monospace"></div>
+    </div>
+    <br><br><br><br>
+    <div class="row">
+      <div id="tables" class="col-lg-6"></div>
+      <div id="explanation" class="col-lg-6"></div>
+    </div>
+    <div class="row">
+      <div id="links">
+        <a href="http://en.wikipedia.org/wiki/String_matching">Wikipedia Article on String Matching</a><br>
+        <a href="http://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm">KMP Algorithm</a><br>
+        <a href="http://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">Boyer-Moore Algorithm</a><br>
       </div>
-    </form>
+    </div>
+    </div>
+
   </div>
-  <div class="result">
-    <div id="haystack" class="monospace"></div></br>
-    <div id="needle" class="monospace"></div>
-  </div>
-  <br><br><br><br>
-  <div id="explanation"></div>
-  <br><br><br><br>
-  <div class="" id="tables"></div>
-</div>
-<script src="javascript/strmatch_dev.js"></script>
+  <script src="javascript/strmatch_dev.js"></script>
 </body>
 </html>
