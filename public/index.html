@@ -30,6 +30,9 @@
         position:absolute;
       }
 
+      #haystack {
+      }
+
       .table-cell {
         text-align: center;
         width: 40px;
@@ -77,17 +80,16 @@
 
           <div class="form-group">
             <label>
-              <input type="text" value="ABCDABD" id="needle-input" class="form-control"></input> Needle
+              <input type="text" value="EXAMPLE" maxlength="10" id="needle-input" class="form-control"></input> Needle
             </label>
           </div>
           <div class="form-group">
             <label>
-              <input type="text" value="ABCABCDABABCQQQQQQQQQQQQQDABCDABDE" id="haystack-input" class="form-control"></input> Haystack
+              <input type="text" value="THIS IS A SIMPLE EXAMPLE" maxlength="30" id="haystack-input" class="form-control"></input> Haystack
             </label>
           </div>
           <br>
           <input type="button" value="Go!" class="btn btn-default" id="go"></input>
-          <input type="button" value="Step" class="btn btn-default" id="step"></input>
         </div>
       </form>
 
@@ -97,8 +99,8 @@
     </div>
     <br><br><br><br>
     <div class="row">
-      <div id="tables" class="col-lg-6"></div>
-      <div id="explanation" class="col-lg-6"></div>
+      <div id="tables" class="col-sm-4"></div>
+      <div id="explanation" class="col-sm-4"></div>
     </div>
     <div class="row">
       <div id="links">

@@ -6,7 +6,6 @@
         [jayq.util :only [log]])
   (:use-macros [jayq.macros :only [queue]]))
 
-
 (defn match-fn
   []
   ({"naive"  strmatch.logic.brute-force/match
@@ -64,12 +63,18 @@
     (queue $elem
            (anim (.children $elem (str "#cell" index))
                  {:background-color actual-color}
-                 200)
+                 fade-duration)
            (dequeue $elem))
     $elem))
 
 (defn- position-of-haystack []
   (-> :#haystack $ .position .-left))
+
+(def jump-duration 250)
+(def wait-after-jump 250)
+(def wait-after-fade 500)
+(def fade-duration 200)
+(def wait-before-jump 500)
 
 (defn animate-match
   [match-result $elem]
@@ -86,17 +91,17 @@
                (dequeue $elem))
         (-> $elem
             (anim {:left 
-                   (+ (position-of-haystack) (* div-width index))} 250)
-            (.delay 250))
+                   (+ (position-of-haystack) (* div-width index))} jump-duration)
+            (.delay wait-after-jump))
         (doseq [color-event colors]
           (-> $elem
               (color (:color color-event)
                      (:index color-event))
-              (.delay 500)))
+              (.delay wait-after-fade)))
         (queue $elem
                (html ($ :#explanation) explanation)
                (dequeue $elem))
-        (.delay $elem 1000)
+        (.delay $elem wait-before-jump)
         (recur (rest results))))))
 
 (defn table-html [table]
@@ -142,25 +147,13 @@
 
 (def *playing?* false)
 
-(defn step-forwards []
-  (when-not *playing?*
-    (set! *playback-data*
-          {:match-data (:match-data *playback-data*)
-           :index (inc (:index *playback-data*))})
-    (prn (:index *playback-data*))))
-
 (def $go ($ :#go))
-(def $step ($ :#step))
 (def $needle-input ($ :#needle-input))
 (def $haystack-input ($ :#haystack-input))
+
 
 (delegate $go "" :click
           (fn [e]
             (let [needle (val $needle-input)
                   haystack (val $haystack-input)]
               (show-match needle haystack))))
-
-(delegate $step "" :click
-          (fn [e]
-            (step-forwards)
-            ))
