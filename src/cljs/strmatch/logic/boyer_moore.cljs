@@ -110,20 +110,20 @@
         last-occ (last-occurrence needle)
         haystack-char (nth haystack (+ index discrep))
         last-occ-value (last-occ haystack-char)]
-    (if discrep
-    (str 
-      "discrepancy_index = " discrep "<br>"
-      "last_occurrence(" haystack-char ") = " last-occ-value "<br>"
-      "bad_suffix(" discrep ") = " bad-suff-value
-      "<br><br>"
-
-      "Bad Suffix gives a jump of (" discrep ") - (" bad-suff-value ") = " (- discrep bad-suff-value) "<br>"
-      "Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
-      "So we "
-      (cond (< bad-suff-value last-occ-value) "go with Bad Suffix"
-            (> bad-suff-value last-occ-value) "go with Last Occurrence"
-            :else "are indifferent"))
-      "Match found!")))
+    (cond
+      (nil? haystack-char) "No match found :("
+      discrep (str
+                "discrepancy_index = " discrep "<br>"
+                "last_occurrence(" haystack-char ") = " last-occ-value "<br>"
+                "bad_suffix(" discrep ") = " bad-suff-value
+                "<br><br>"
+                "Bad Suffix gives a jump of (" discrep ") - (" bad-suff-value ") = " (- discrep bad-suff-value) "<br>"
+                "Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
+                "So we "
+                (cond (< bad-suff-value last-occ-value) "go with Bad Suffix"
+                      (> bad-suff-value last-occ-value) "go with Last Occurrence"
+                      :else "are indifferent"))
+      :else "Match found!")))
 
 (defn- match-data
   [needle haystack]
@@ -137,7 +137,8 @@
                  :colors colors
                  :explanation explanation}
           result (conj acc entry)]
-      (if (and discrep (<= (+ index discrep) (count haystack)))
+      (if (and discrep
+               (<= (+ index (count needle)) (count haystack)))
         (recur (+ index jump) result)
         result))))
 
