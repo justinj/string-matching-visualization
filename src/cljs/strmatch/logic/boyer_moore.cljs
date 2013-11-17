@@ -41,10 +41,10 @@
   [string suffix index]
   (let [chrs (vec string)]
     (and
-      (or (nil? (chrs index))
+      (or (neg? index)
           (not (= (chrs index) (suffix 0))))
       (every? (fn [i]
-                (or (nil? (chrs (+ i index)))
+                (or (neg? (+ i index))
                     (= (chrs (+ i index)) (suffix i))))
               (range 1 (count suffix))))))
 

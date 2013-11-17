@@ -1,10 +1,18 @@
 (ns strmatch.ui.core
   (:require [strmatch.logic.kmp-matcher]
             [strmatch.logic.brute-force]
-            [strmatch.logic.boyer-moore])
+            [strmatch.logic.boyer-moore]
+            [cljs.core.async :refer [put! chan <! close!]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [jayq.core :only [$ val css html append delegate anim dequeue]]
         [jayq.util :only [log]])
   (:use-macros [jayq.macros :only [queue]]))
+
+(def jump-duration 250)
+(def wait-after-jump 250)
+(def wait-after-fade 500)
+(def fade-duration 200)
+(def wait-before-jump 500)
 
 (defn match-fn
   []
@@ -70,39 +78,30 @@
 (defn- position-of-haystack []
   (-> :#haystack $ .position .-left))
 
-(def jump-duration 250)
-(def wait-after-jump 250)
-(def wait-after-fade 500)
-(def fade-duration 200)
-(def wait-before-jump 500)
-
-(defn animate-match
-  [match-result $elem]
-  (loop [results match-result]
-    (if (empty? results)
-      $elem
-      (let [index (:index (first results))
-            colors (:colors (first results))
-            explanation (:explanation (first results))]
-        (queue $elem
-               (-> $elem
-                   .children
-                   (css :background-color "#FFFFFF"))
-               (dequeue $elem))
-        (-> $elem
-            (anim {:left 
-                   (+ (position-of-haystack) (* div-width index))} jump-duration)
-            (.delay wait-after-jump))
-        (doseq [color-event colors]
-          (-> $elem
-              (color (:color color-event)
-                     (:index color-event))
-              (.delay wait-after-fade)))
-        (queue $elem
-               (html ($ :#explanation) explanation)
-               (dequeue $elem))
-        (.delay $elem wait-before-jump)
-        (recur (rest results))))))
+(defn queue-step
+  [step]
+  (let [$elem ($ :#needle)
+        index (:index step)
+        colors (:colors step)
+        explanation (:explanation step)]
+    (queue $elem
+           (-> $elem
+               .children
+               (css :background-color "#FFFFFF"))
+           (dequeue $elem))
+    (-> $elem
+        (anim {:left 
+               (+ (position-of-haystack) (* div-width index))} jump-duration)
+        (.delay wait-after-jump))
+    (doseq [color-event colors]
+      (-> $elem
+          (color (:color color-event)
+                 (:index color-event))
+          (.delay wait-after-fade)))
+    (queue $elem
+           (html ($ :#explanation) explanation)
+           (dequeue $elem))
+    (.delay $elem wait-before-jump)))
 
 (defn table-html [table]
   (str "<table class=''>"
@@ -126,9 +125,10 @@
   (doseq [table tables]
       (show-table table)))
 
-(defn show-match
-  [needle haystack]
-  (let [match-result ((match-fn) needle haystack)
+(defn reset-playback []
+  (let [needle (val $needle-input)
+        haystack (val $haystack-input)
+        match-result ((match-fn) needle haystack)
         match-animation (:animation match-result)
         match-tables (:tables match-result)]
     (show-tables match-tables)
@@ -139,21 +139,36 @@
     (set-value-divs ($ :#haystack) haystack)
     (set-value-divs ($ :#needle) needle)
     (css ($ :#needle) {:left (position-of-haystack)})
-    (set! *playback-data* {:match-data match-animation :index 0})
-    (animate-match match-animation ($ :#needle))))
+    (set! *playback-index* 0)
+    (set! *playback-data* match-animation)))
 
-(def *playback-data*
-  {})
+
+(def *playback-data* {})
+
+(def *playback-index* 0)
 
 (def *playing?* false)
 
 (def $go ($ :#go))
+(def $step ($ :#step))
 (def $needle-input ($ :#needle-input))
 (def $haystack-input ($ :#haystack-input))
 
+(def step-channel (chan))
 
-(delegate $go "" :click
+(doseq [radio ($ :.algbutton)]
+  (delegate ($ radio) "" :click reset-playback))
+
+(doseq [input [$needle-input $haystack-input]]
+  (delegate input "" :keyup reset-playback))
+
+(delegate $step "" :click
           (fn [e]
-            (let [needle (val $needle-input)
-                  haystack (val $haystack-input)]
-              (show-match needle haystack))))
+            (put! step-channel *playback-index*)
+            (set! *playback-index* (inc *playback-index*))))
+
+(go (while true
+      (let [index (<! step-channel)]
+        (queue-step (nth *playback-data* index)))))
+
+(reset-playback)
