@@ -56,7 +56,7 @@
               (map #(vector (matches-at string (vec suffix) %) %)
                    (range (- (count string) (count suffix)) (- -1 (count suffix)) -1))))))
 
-(defn- bad-suffix-for-index
+(defn- good-suffix-for-index
   [string index]
   (let [suffix (drop index string)]
     (match-index string suffix)))
@@ -74,10 +74,10 @@
 ;
 ; You could think of it as finding the largest index that [^L]E matches.
 
-(defn bad-suffix
+(defn good-suffix
   [string]
   (vec (map 
-  #(bad-suffix-for-index string %)
+  #(good-suffix-for-index string %)
     (range 0 (count string)))))
 
 (defn- reverse-discrepancy-index
@@ -91,9 +91,9 @@
 (defn- calculate-jump
   [needle haystack index]
   (let [discrep (reverse-discrepancy-index needle haystack index)
-        bad-suff (bad-suffix needle)
+        good-suff (good-suffix needle)
         last-occ (last-occurrence needle)]
-    (- discrep (min (bad-suff discrep)
+    (- discrep (min (good-suff discrep)
                     (last-occ (nth haystack (+ index discrep))))))) 
 
 (defn- color-array [index discrep needle]
@@ -105,8 +105,8 @@
 (defn- explanation-for
   [needle haystack index]
   (let [discrep (reverse-discrepancy-index needle haystack index)
-        bad-suff (bad-suffix needle)
-        bad-suff-value (bad-suff discrep)
+        good-suff (good-suffix needle)
+        good-suff-value (good-suff discrep)
         last-occ (last-occurrence needle)
         haystack-char (nth haystack (+ index discrep))
         last-occ-value (last-occ haystack-char)]
@@ -115,13 +115,13 @@
       discrep (str
                 "discrepancy_index = " discrep "<br>"
                 "last_occurrence(" haystack-char ") = " last-occ-value "<br>"
-                "bad_suffix(" discrep ") = " bad-suff-value
+                "good_suffix(" discrep ") = " good-suff-value
                 "<br><br>"
-                "Bad Suffix gives a jump of (" discrep ") - (" bad-suff-value ") = " (- discrep bad-suff-value) "<br>"
+                "Good Suffix gives a jump of (" discrep ") - (" good-suff-value ") = " (- discrep good-suff-value) "<br>"
                 "Last Occurrence gives a jump of (" discrep ") - (" last-occ-value") = " (- discrep last-occ-value) "<br>"
                 "So we "
-                (cond (< bad-suff-value last-occ-value) "go with Bad Suffix"
-                      (> bad-suff-value last-occ-value) "go with Last Occurrence"
+                (cond (< good-suff-value last-occ-value) "go with Good Suffix"
+                      (> good-suff-value last-occ-value) "go with Last Occurrence"
                       :else "are indifferent"))
       :else "Match found!")))
 
@@ -144,9 +144,9 @@
 
 (defn match
   [needle haystack]
-  (let [bad-suff (bad-suffix needle)
+  (let [good-suff (good-suffix needle)
         last-occ (last-occurrence needle)]
     {:animation (match-data needle haystack)
-     :tables [(concat [["i" "Suffix Location"]] (map vector (range) bad-suff))
+     :tables [(concat [["i" "Suffix Location"]] (map vector (range) good-suff))
               (concat [["char" "Last Occurrence"]]
                       (map #(vector % (last-occ %)) (distinct needle)))]}))

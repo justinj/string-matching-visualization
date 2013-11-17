@@ -1,7 +1,7 @@
 (ns strmatch.boyer-moore-spec
   (:require-macros [specljs.core :refer [describe it should=]])
   (:require [specljs.core])
-  (:use [strmatch.logic.boyer-moore :only (last-occurrence bad-suffix match)]))
+  (:use [strmatch.logic.boyer-moore :only (last-occurrence good-suffix match)]))
 
 (describe "the boyer-moore matcher"
           (describe "last occurrence array"
@@ -16,12 +16,12 @@
                           (should= -1 (last-occ "z"))
                           )))
 
-          (describe "bad suffix array"
+          (describe "good suffix array"
                     (it "has the index of the last occurrence of not the current character, but the same suffix"
                         (should= [-4 -3 -2 -1 -2 3 5]
-                                 (bad-suffix "abacaba"))
+                                 (good-suffix "abacaba"))
                         (should= [-3 -2 1]
-                                 (bad-suffix "abc")))
+                                 (good-suffix "abc")))
                     )
 
           (describe "matching" 
