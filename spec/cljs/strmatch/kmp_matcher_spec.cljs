@@ -16,15 +16,15 @@
           (it "shows each stage of the matching process"
               (should=
                 [0 1]
-                (map :index (match "abc" "aabc")))
+                (map :index (:animation (match "abc" "aabc"))))
               (should=
                 [0 2 3]
-                (map :index (match "abc" "abdabc")))
+                (map :index (:animation (match "abc" "abdabc"))))
               (should=
                 [0 3 4 8 10 11 15]
-                (map :index (match "abcdabd" "abc abcdab abcdabcdabde"))))
+                (map :index (:animation (match "abcdabd" "abc abcdab abcdabcdabde")))))
           (it "highlights the letters comparisons were done against"
               (should=
                 [[{:color :green, :index 0} {:color :green, :index 1} {:color :green, :index 2} {:color :red, :index 3}]]
-                (map :colors (match "abc" "abc"))))
+                (map :colors (:animation (match "abc" "abc")))))
           )

@@ -10,9 +10,9 @@
                  [org.clojure/clojurescript "0.0-2030"]]
 
   :profiles {:dev {:dependencies [[speclj "2.5.0"]
-                                  [specljs "2.7.4"]]}}
+                                  [specljs "2.8.1"]]}}
   :plugins [[speclj "2.5.0"]
-            [specljs "2.7.4"]
+            [specljs "2.8.1"]
             [lein-cljsbuild "0.3.2"]]
 
   :cljsbuild ~(let [run-specs ["phantomjs" "bin/specljs_runner.js"  "public/javascript/strmatch_test.js"]]
@@ -30,8 +30,7 @@
 
                     :prod {:source-paths ["src/cljs"]
                            :compiler {:output-to "public/javascript/strmatch.js"
-                                      :optimizations :simple}}
-                    }
+                                      :optimizations :simple}}}
 
               :test-commands {"test" run-specs}})
 

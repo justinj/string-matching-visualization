@@ -34,7 +34,8 @@
 (def color-for
   {:green "#81F13D"
    :red "#FF0000"
-   :white "#FFFFFF"})
+   :white "#FFFFFF"
+   :yellow "#FFFF00"})
 
 (def div-width 30)
 

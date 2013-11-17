@@ -44,7 +44,11 @@
         padding (+ to-ignore index)
         length-of-match (if discrep (- discrep to-ignore) (count needle))]
     {:index index
-     :colors (color-array to-ignore length-of-match)
+     :colors (concat
+               (map (fn [i] {:color :yellow
+                             :index i})
+                    (range 0 to-ignore))
+               (color-array to-ignore length-of-match))
      :explanation (explanation-for fail-array discrep (count needle))
      }))
 
