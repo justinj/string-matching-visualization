@@ -116,6 +116,7 @@
         match-animation (:animation match-result)
         match-tables (:tables match-result)]
     (show-tables match-tables)
+    (html ($ :#explanation) "")
     (html ($ :.result)
           (str 
             "<div id=\"haystack\" class=\"monospace\"></div></br>"
