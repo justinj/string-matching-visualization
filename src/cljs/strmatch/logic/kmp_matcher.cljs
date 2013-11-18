@@ -45,9 +45,11 @@
         length-of-match (if discrep (- discrep to-ignore) (count needle))]
     {:index index
      :colors (concat
-               (map (fn [i] {:color :yellow
-                             :index i})
-                    (range 0 to-ignore))
+               ; yellows for already matched?
+               ; (map (fn [i] {:color :yellow
+               ;               :delay 0
+               ;               :index i})
+               ;      (range 0 to-ignore))
                (color-array to-ignore length-of-match))
      :explanation (explanation-for fail-array discrep (count needle))
      }))
