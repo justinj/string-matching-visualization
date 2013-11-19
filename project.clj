@@ -6,7 +6,6 @@
 
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [jayq "2.4.0"]
-                 [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
                  [org.clojure/clojurescript "0.0-2030"]]
 
   :profiles {:dev {:dependencies [[speclj "2.5.0"]

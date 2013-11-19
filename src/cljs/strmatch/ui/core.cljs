@@ -1,14 +1,13 @@
 (ns strmatch.ui.core
   (:require [strmatch.logic.kmp-matcher]
             [strmatch.logic.brute-force]
-            [strmatch.logic.boyer-moore]
-            [cljs.core.async :refer [put! chan <! close!]])
+            [strmatch.logic.boyer-moore])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:use [jayq.core :only [$ val css html append delegate anim dequeue]]
         [jayq.util :only [log]])
   (:use-macros [jayq.macros :only [queue ready]]))
 
-(ready 
+(ready
   (def jump-duration 250)
   (def wait-after-jump 250)
   (def wait-after-fade 500)
@@ -24,8 +23,6 @@
   (def *playback-data* {})
   (def *playback-index* 0)
 
-  (def step-channel (chan))
-
   (defn match-fn []
     ({"naive"  strmatch.logic.brute-force/match
       "kmp" strmatch.logic.kmp-matcher/match
@@ -40,11 +37,11 @@
 
   (def div-width 30)
 
-  (defn set-value-divs 
+  (defn set-value-divs
     [$elem value]
     (.empty $elem)
     (doseq [[i char] (map-indexed vector value)]
-      (append $elem 
+      (append $elem
               (str "<div "
                    "style='width:" div-width "px;float:left'"
                    "id='cell" i "'"
@@ -52,12 +49,12 @@
                    ">" (if (= char \space) "&nbsp;" char)
                    "</div>"))))
 
-  (defn color [$elem col index]
+  (defn color [$elem col index duration]
     (let [actual-color (color-for col)]
       (queue $elem
              (anim (.children $elem (str "#cell" index))
                    {:background-color actual-color}
-                   fade-duration)
+                   duration)
              (dequeue $elem))
       $elem))
 
@@ -76,14 +73,15 @@
                  (css :background-color "#FFFFFF"))
              (dequeue $elem))
       (-> $elem
-          (anim {:left 
+          (anim {:left
                  (+ (position-of-haystack) (* div-width index))} jump-duration)
           (.delay wait-after-jump))
       (doseq [color-event colors]
         (-> $elem
             (color (:color color-event)
-                   (:index color-event))
-            (.delay wait-after-fade)))
+                   (:index color-event)
+                   (or (:delay color-event) fade-duration))
+            (.delay (or (:delay color-event) wait-after-fade))))
       (queue $elem
              (html ($ :#explanation) explanation)
              (dequeue $elem))
@@ -120,7 +118,7 @@
       (show-tables match-tables)
       (html ($ :#explanation) "")
       (html ($ :.result)
-            (str 
+            (str
               "<div id=\"haystack\" class=\"monospace\"></div></br>"
               "<div id=\"needle\" class=\"monospace\"></div>"))
       (set-value-divs ($ :#haystack) haystack)
@@ -138,20 +136,16 @@
   (delegate $step "" :click
             (fn [e]
               (when (< *playback-index* (count *playback-data*))
-                (put! step-channel *playback-index*)
+                (queue-step (nth *playback-data* *playback-index*))
                 (set! *playback-index* (inc *playback-index*)))))
 
   (delegate $animate "" :click
             (fn [e]
               (let [max-val (count *playback-data*)]
                 (doseq [i (range *playback-index* max-val)]
-                  (put! step-channel i))
+                  (queue-step (nth *playback-data* *playback-index*)))
                 (set! *playback-index* max-val))))
 
   (delegate $reset "" :click reset-playback)
-
-  (go (while true
-        (let [index (<! step-channel)]
-          (queue-step (nth *playback-data* index)))))
 
   (reset-playback))
