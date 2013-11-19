@@ -143,7 +143,7 @@
             (fn [e]
               (let [max-val (count *playback-data*)]
                 (doseq [i (range *playback-index* max-val)]
-                  (queue-step (nth *playback-data* *playback-index*)))
+                  (queue-step (nth *playback-data* i)))
                 (set! *playback-index* max-val))))
 
   (delegate $reset "" :click reset-playback)
